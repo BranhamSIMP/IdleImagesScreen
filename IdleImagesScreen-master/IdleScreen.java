@@ -1,6 +1,8 @@
 import java.io.File;
 import java.util.ArrayList;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -9,11 +11,14 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-public class IdleImageScreen extends JFrame implements MouseListener{
+public class IdleScreen extends JFrame implements MouseListener{
 	private boolean isRunning = true;
 	
+	public IdleScreen(){
+	isRunning=true;	
+	}
 	public void startidlescreen() throws IOException{
-		isRunning =true;
+		
         //Initialize storage and access of images to be used in screensaver
 		String folderpath = "images";
 	 File dir = new File(folderpath);
@@ -21,6 +26,7 @@ public class IdleImageScreen extends JFrame implements MouseListener{
 	    ArrayList<BufferedImage> pics = new ArrayList<BufferedImage>(0);
 	    
 	    
+	    //Dimension of screen
 	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	   
 	    	
@@ -30,8 +36,8 @@ public class IdleImageScreen extends JFrame implements MouseListener{
 	    f.setSize((int)screenSize.getWidth(), (int)screenSize.getHeight());
 	    JLabel label = new JLabel(new ImageIcon(ImageIO.read(directoryListing[0])));
 	    f.getContentPane().add(label);
-	    f.getContentPane().addMouseListener(this);
-	    
+	    label.addMouseListener(this);
+	    f.setUndecorated(true);
 	  //Endless iteration through the images
 	    	for(int i=0;i<directoryListing.length;i=(i+1)%directoryListing.length) {
 	    		
@@ -40,8 +46,8 @@ public class IdleImageScreen extends JFrame implements MouseListener{
 	    		pics.add(ImageIO.read(directoryListing[0]));
 	    	}
 	    	
-	    	 
-	    	label.setIcon(new ImageIcon(pics.get(i)));
+	    	 //Change image
+	    	label.setIcon(new ImageIcon(resize(pics.get(i), (int)screenSize.getHeight(),(int)screenSize.getWidth() )));
 	    	
 	    	f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    	
@@ -64,7 +70,7 @@ public class IdleImageScreen extends JFrame implements MouseListener{
 	    		if(!isRunning) {
 	    			
 	    			
-	    			
+	    			f.dispose();
 		    		return;
 	    		}
 		    	else if(g.getTimeRemaining()<=0) {
@@ -108,5 +114,22 @@ public class IdleImageScreen extends JFrame implements MouseListener{
 		// TODO Auto-generated method stub
 		
 	}
-	
+	private static BufferedImage resize(BufferedImage img, int height, int width) {
+        Image tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return resized;
+    }
+	//METHOD TESTING
+// 	public static void main(String[] args) {
+// 		runner r = new runner();
+// 		try {
+// 			r.startidlescreen();
+// 		} catch (IOException e) {
+// 			// TODO Auto-generated catch block
+// 			e.printStackTrace();
+// 		}
+// 	}
 }
