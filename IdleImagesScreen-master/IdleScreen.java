@@ -124,7 +124,7 @@ public class IdleScreen extends JFrame implements MouseListener{
     }
 	//METHOD TESTING
 // 	public static void main(String[] args) {
-// 		runner r = new runner();
+// 		IdleScreen r = new IdleScreen();
 // 		try {
 // 			r.startidlescreen();
 // 		} catch (IOException e) {
