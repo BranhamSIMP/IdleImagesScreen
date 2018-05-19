@@ -1,0 +1,227 @@
+import java.awt.AlphaComposite;
+import java.awt.Button;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.OverlayLayout;
+
+public class ZoomButtons extends JButton implements MouseListener{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	int outwidth;
+	 int outlocalx;
+	 int outlocaly;
+	 int inwidth;
+	 int inlocalx;
+	 int inlocaly;
+	 double scalefac=0.1;
+	 JFrame parent;
+	 JLabel labelref;
+	 JButton zoomin = new JButton("+");
+	 JButton zoomout = new JButton("-");
+	 BufferedImage inImage;
+	 BufferedImage zoomedImage;
+	 int zoomfactor=2;
+	 boolean isZoomed=false;
+	 
+	public ZoomButtons(){
+		
+	}
+
+	/*
+	 * @Param frame JFrame that is in the front
+	 */
+	public void addZoomButtons(JFrame jf, JLabel label) {
+		parent=jf;
+		labelref=label;
+		label=labelref;
+		zoomin.setName("+");
+		zoomout.setName("-");
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		 
+		 //Set flexible sizes
+		 int useddim=0;
+		 
+		 int borderdim=(int) (scalefac/4*useddim);
+		 
+		 boolean usingwidth;
+		 if(screenSize.getWidth()>screenSize.getHeight()) {
+			 useddim=(int) screenSize.getHeight();
+			 usingwidth=false;
+		 }
+		 else {
+			 useddim=(int) screenSize.getWidth();
+			 usingwidth=true;
+		 }
+		 	
+		 	borderdim=(int) (scalefac/3*useddim);
+			outwidth= (int) (useddim*scalefac);
+			
+			if(usingwidth) {
+			outlocalx= (int) ((int) screenSize.getWidth()-(useddim*scalefac)-borderdim);
+			outlocaly= (int) (screenSize.getHeight()-useddim*scalefac-borderdim);
+			}
+			else {
+				outlocalx= (int) ((int) screenSize.getHeight()-(useddim*scalefac)-borderdim);
+				outlocaly= (int) (screenSize.getWidth()-useddim*scalefac-borderdim);	
+			}
+			
+			//Setting zoomin button
+			
+			inwidth=outwidth;
+			inlocaly=outlocaly;
+			inlocalx=(int) (outlocalx-borderdim-inwidth);
+			
+//		zoomin.setBounds(inlocalx, inlocaly, inwidth, inwidth);
+//		zoomout.setBounds(outlocalx, outlocaly, outwidth, outwidth);
+		zoomin.setSize(inwidth, inwidth);
+		zoomin.setLocation(inlocaly, inlocalx);
+		zoomout.setSize(inwidth,inwidth);
+		zoomout.setLocation(outlocaly, outlocalx);
+		zoomin.addMouseListener(this);
+		zoomout.addMouseListener(this);
+		
+	
+		JPanel overlay = new JPanel();
+		JPanel buttonlay = new JPanel();
+		buttonlay.add(zoomin);
+		buttonlay.add(zoomout);
+	
+		buttonlay.setSize((int)screenSize.getWidth(),(int)screenSize.getHeight());
+		buttonlay.setLayout(null);
+		buttonlay.setOpaque(false);
+		overlay.setLayout(null);
+		overlay.add(buttonlay);
+		overlay.add(label);
+		
+		
+		jf.add(overlay);
+
+		
+		
+	}
+	public BufferedImage createImage() throws IOException {
+		int w = labelref.getWidth();
+	    int h = labelref.getHeight();
+	    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+	    return bi;
+			    }
+	
+	protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g.create();
+        int x = (getWidth() - inImage.getWidth()) / 2;
+        int y = (getHeight() - inImage.getHeight()) / 2;
+        g2d.drawImage(inImage, x, y, this);
+        g2d.dispose();
+	}
+	
+	private static BufferedImage resize	(BufferedImage img, int height, int width) {
+        Image tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return resized;
+}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		JButton clicked = (JButton)e.getSource();
+		if(zoomedImage !=null) {
+			try {
+				zoomedImage=createImage();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		else {
+			try {
+				inImage=createImage();
+				zoomedImage=inImage;
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+		int x=0;
+		int y=0;
+		int h;
+		int w;
+
+		
+		if(clicked.getName().equals("+")) {
+			x=zoomedImage.getHeight()/4;
+			y=zoomedImage.getWidth()/4;
+			h=zoomedImage.getHeight()/2;
+			w=zoomedImage.getWidth()/2;
+			
+			zoomedImage = zoomedImage.getSubimage(x,y,w,h);
+			zoomedImage=resize(zoomedImage, labelref.getHeight(), labelref.getWidth());
+			isZoomed=true;
+		}
+		else if(clicked.getName().equals("-") && isZoomed) {
+			x=zoomedImage.getHeight()-zoomedImage.getHeight()/4;
+			y=zoomedImage.getWidth()-zoomedImage.getWidth()/4;
+			h=zoomedImage.getHeight()/2+zoomedImage.getHeight();
+			w=zoomedImage.getWidth()/2+zoomedImage.getWidth();
+		
+			if(h==inImage.getHeight() && w==inImage.getWidth()) {
+				isZoomed=false;
+			}
+
+			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
+			
+			
+		}
+		labelref= new JLabel(new ImageIcon(zoomedImage));
+		repaint();
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+}
