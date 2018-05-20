@@ -40,6 +40,10 @@ public class ZoomButtons extends JButton implements MouseListener{
 	 JButton zoomout = new JButton("-");
 	 BufferedImage inImage;
 	 BufferedImage zoomedImage;
+	 int zoomx;
+	 int zoomy;
+	 int zoomwidth;
+	 int zoomheight;
 	 int zoomfactor=2;
 	 boolean isZoomed=false;
 	 
@@ -162,6 +166,10 @@ public class ZoomButtons extends JButton implements MouseListener{
 					else {
 						inImage=createImage();
 						zoomedImage=inImage;
+						zoomx=0;
+						zoomy=0;
+						zoomheight=inImage.getHeight();
+						zoomwidth=inImage.getWidth();
 					}
 			
 			
@@ -170,60 +178,68 @@ public class ZoomButtons extends JButton implements MouseListener{
 			e1.printStackTrace();
 		}
 		
-		int x=0;
-		int y=0;
-		int h;
-		int w;
 
 		
 		if(clicked.getName().equals("+")) {
-			x=zoomedImage.getHeight()/4;
-			y=zoomedImage.getWidth()/4;
-			h=zoomedImage.getHeight()/2;
-			w=zoomedImage.getWidth()/2;
+			zoomx+=zoomheight/(2*zoomfactor);
+			zoomy+=zoomwidth/(zoomfactor*2);
+			zoomheight=zoomheight/zoomfactor;
+			zoomwidth=zoomwidth/zoomfactor;
+			int realx=zoomedImage.getHeight()/(2*zoomfactor);
+			int realy=zoomedImage.getWidth()/(2*zoomfactor);
+			int realzheight=realx*2;
+			int realzwidth=realy*2;
 			
-			zoomedImage = zoomedImage.getSubimage(x,y,w,h);
+			zoomedImage = zoomedImage.getSubimage(realx, realy, realzwidth, realzheight);
 			zoomedImage=resize(zoomedImage, labelref.getHeight(), labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
 			isZoomed=true;
 		}
 		else if(clicked.getName().equals("-") && isZoomed) {
-			x=zoomedImage.getHeight()-zoomedImage.getHeight()/4;
-			y=zoomedImage.getWidth()-zoomedImage.getWidth()/4;
-			h=zoomedImage.getHeight()/2+zoomedImage.getHeight();
-			w=zoomedImage.getWidth()/2+zoomedImage.getWidth();
-		
-			if(h==inImage.getHeight() && w==inImage.getWidth()) {
+			
+			int ratio=(int)Math.round((double)(inImage.getWidth()/zoomwidth));
+			int widthfactor = inImage.getWidth()/(2*ratio);
+			int heightfactor=inImage.getHeight()/(2*ratio);
+			
+			zoomx=zoomx-heightfactor;
+			zoomy=zoomy-widthfactor;
+			zoomheight=zoomheight*zoomfactor;
+			zoomwidth=zoomwidth*zoomfactor;
+	
+			
+			if(zoomheight==inImage.getHeight() && zoomwidth==inImage.getWidth()) {
 				isZoomed=false;
 			}
-			zoomedImage=inImage.getSubimage(x, y, w, h);
+
+			zoomedImage=inImage.getSubimage(zoomx, zoomy, zoomwidth, zoomheight);
 			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
 		}
 		repaint();
 
 	}
-	public static boolean compareImages(BufferedImage imgA, BufferedImage imgB) {
-		  // The images must be the same size.
-		  if (imgA.getWidth() != imgB.getWidth() || imgA.getHeight() != imgB.getHeight()) {
-		    return false;
-		  }
+//	public static boolean compareImages(BufferedImage imgA, BufferedImage imgB) {
+//		  // The images must be the same size.
+//		  if (imgA.getWidth() != imgB.getWidth() || imgA.getHeight() != imgB.getHeight()) {
+//		    return false;
+//		  }
+//
+//		  int width  = imgA.getWidth();
+//		  int height = imgA.getHeight();
+//
+//		  // Loop over every pixel.
+//		  for (int y = 0; y < height; y++) {
+//		    for (int x = 0; x < width; x++) {
+//		      // Compare the pixels for equality.
+//		      if (imgA.getRGB(x, y) != imgB.getRGB(x, y)) {
+//		        return false;
+//		      }
+//		    }
+//		  }
+//
+//		  return true;
+//		}
 
-		  int width  = imgA.getWidth();
-		  int height = imgA.getHeight();
-
-		  // Loop over every pixel.
-		  for (int y = 0; y < height; y++) {
-		    for (int x = 0; x < width; x++) {
-		      // Compare the pixels for equality.
-		      if (imgA.getRGB(x, y) != imgB.getRGB(x, y)) {
-		        return false;
-		      }
-		    }
-		  }
-
-		  return true;
-		}
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
