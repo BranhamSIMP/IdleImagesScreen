@@ -2,6 +2,7 @@ import java.awt.AlphaComposite;
 import java.awt.Button;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -22,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
 
 public class ZoomButtons extends JButton implements MouseListener{
-
+	
 	/**
 	 * 
 	 */
@@ -46,7 +47,8 @@ public class ZoomButtons extends JButton implements MouseListener{
 	 int zoomheight;
 	 int zoomfactor=2;
 	 boolean isZoomed=false;
-	 
+	 private static final int maxzooms=8;
+	 int maxzoomclicks=maxzooms;
 	public ZoomButtons(){
 		
 	}
@@ -55,14 +57,13 @@ public class ZoomButtons extends JButton implements MouseListener{
 	 * @Param frame JFrame that is in the front
 	 */
 	public void addZoomButtons(JFrame jf, JLabel label) {
-		
+		zoomin.setFont(new Font("Arial", Font.BOLD,20));
+		zoomout.setFont(new Font("Arial", Font.BOLD,20));
 		parent=jf;
 		labelref=label;
 		label=labelref;
 		zoomin.setName("+");
 		zoomout.setName("-");
-		zoomin.setFont(new Font("Arial", Font.BOLD,20));
-		zoomout.setFont(new Font("Arial", Font.BOLD,20));
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		 
 		 //Set flexible sizes
@@ -122,7 +123,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 		
 		
 		jf.add(overlay);
-
+		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 	
 	}
@@ -183,7 +184,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 		
 
 		
-		if(clicked.getName().equals("+")) {
+		if(clicked.getName().equals("+") && maxzoomclicks>0) {
 			zoomx+=zoomheight/(2*zoomfactor);
 			zoomy+=zoomwidth/(zoomfactor*2);
 			zoomheight=zoomheight/zoomfactor;
@@ -197,10 +198,20 @@ public class ZoomButtons extends JButton implements MouseListener{
 			zoomedImage=resize(zoomedImage, labelref.getHeight(), labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
 			isZoomed=true;
+			maxzoomclicks--;
+			System.out.println("+:"+maxzoomclicks);
 		}
 		else if(clicked.getName().equals("-") && isZoomed) {
-			
+
 			int ratio=(int)Math.round((double)(inImage.getWidth()/zoomwidth));
+			//catch rounding errors pushing it below 1 or even 0.
+			if(ratio<1) {
+				ratio=1;
+			}
+			if(ratio==1) {
+				zoomedImage=inImage;
+			}
+			else if(ratio>1) {
 			int widthfactor = inImage.getWidth()/(2*ratio);
 			int heightfactor=inImage.getHeight()/(2*ratio);
 			
@@ -208,27 +219,54 @@ public class ZoomButtons extends JButton implements MouseListener{
 			zoomy=zoomy-widthfactor;
 			zoomheight=zoomheight*zoomfactor;
 			zoomwidth=zoomwidth*zoomfactor;
-	
-			
-			if(zoomheight==inImage.getHeight() && zoomwidth==inImage.getWidth()) {
-				isZoomed=false;
 			}
-			
 			//Catching error if someone zooms in, then tries to zoom out when there
 			//is only about a few pixels difference between inImage and zoomedImage
 			//due to rounding errors. Will set to maximum size if this happens.
 			try {
 			zoomedImage=inImage.getSubimage(zoomx, zoomy, zoomwidth, zoomheight);
+
 			}
 			catch(Exception exc) {
 				zoomedImage=inImage;
+				
 			}
 			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
+			maxzoomclicks++;
+			if(zoomheight==inImage.getHeight() && zoomwidth==inImage.getWidth()) {
+				isZoomed=false;
+				maxzoomclicks=maxzooms;
+				System.out.println("-:"+maxzoomclicks);
+				
+			}
+			System.out.println("-:"+zoomheight+", "+zoomwidth);
+			
 		}
 		repaint();
 
 	}
+//	public static boolean compareImages(BufferedImage imgA, BufferedImage imgB) {
+//		  // The images must be the same size.
+//		  if (imgA.getWidth() != imgB.getWidth() || imgA.getHeight() != imgB.getHeight()) {
+//		    return false;
+//		  }
+//
+//		  int width  = imgA.getWidth();
+//		  int height = imgA.getHeight();
+//
+//		  // Loop over every pixel.
+//		  for (int y = 0; y < height; y++) {
+//		    for (int x = 0; x < width; x++) {
+//		      // Compare the pixels for equality.
+//		      if (imgA.getRGB(x, y) != imgB.getRGB(x, y)) {
+//		        return false;
+//		      }
+//		    }
+//		  }
+//
+//		  return true;
+//		}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
