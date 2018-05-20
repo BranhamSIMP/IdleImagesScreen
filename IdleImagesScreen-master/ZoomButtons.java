@@ -210,35 +210,22 @@ public class ZoomButtons extends JButton implements MouseListener{
 			if(zoomheight==inImage.getHeight() && zoomwidth==inImage.getWidth()) {
 				isZoomed=false;
 			}
-
+			
+			//Catching error if someone zooms in, then tries to zoom out when there
+			//is only about a few pixels difference between inImage and zoomedImage
+			//due to rounding errors. Will set to maximum size if this happens.
+			try {
 			zoomedImage=inImage.getSubimage(zoomx, zoomy, zoomwidth, zoomheight);
+			}
+			catch(Exception exc) {
+				zoomedImage=inImage;
+			}
 			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
 		}
 		repaint();
 
 	}
-//	public static boolean compareImages(BufferedImage imgA, BufferedImage imgB) {
-//		  // The images must be the same size.
-//		  if (imgA.getWidth() != imgB.getWidth() || imgA.getHeight() != imgB.getHeight()) {
-//		    return false;
-//		  }
-//
-//		  int width  = imgA.getWidth();
-//		  int height = imgA.getHeight();
-//
-//		  // Loop over every pixel.
-//		  for (int y = 0; y < height; y++) {
-//		    for (int x = 0; x < width; x++) {
-//		      // Compare the pixels for equality.
-//		      if (imgA.getRGB(x, y) != imgB.getRGB(x, y)) {
-//		        return false;
-//		      }
-//		    }
-//		  }
-//
-//		  return true;
-//		}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
