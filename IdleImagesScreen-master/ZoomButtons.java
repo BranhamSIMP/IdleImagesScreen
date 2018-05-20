@@ -1,5 +1,6 @@
 import java.awt.AlphaComposite;
 import java.awt.Button;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -116,21 +117,25 @@ public class ZoomButtons extends JButton implements MouseListener{
 		jf.add(overlay);
 
 		
-		
+	
 	}
 	public BufferedImage createImage() throws IOException {
 		int w = labelref.getWidth();
 	    int h = labelref.getHeight();
+	   
 	    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+	    Graphics g =bi.createGraphics();
+	    labelref.getIcon().paintIcon(null,g,0,0);
+	    g.dispose();
 	    return bi;
 			    }
 	
 	protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g.create();
-        int x = (getWidth() - inImage.getWidth()) / 2;
-        int y = (getHeight() - inImage.getHeight()) / 2;
-        g2d.drawImage(inImage, x, y, this);
+//        int x = (getWidth() - inImage.getWidth()) / 2;
+//        int y = (getHeight() - inImage.getHeight()) / 2;
+        g2d.drawImage(inImage, 0, 0,this);
         g2d.dispose();
 	}
 	
@@ -146,22 +151,23 @@ public class ZoomButtons extends JButton implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		JButton clicked = (JButton)e.getSource();
-		if(zoomedImage !=null) {
-			try {
-				zoomedImage=createImage();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		else {
-			try {
-				inImage=createImage();
-				zoomedImage=inImage;
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+		
+		//Update with new Imageicons
+		try {
+			
+					if(inImage !=null) {
+						
+						
+					}
+					else {
+						inImage=createImage();
+						zoomedImage=inImage;
+					}
+			
+			
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
 		int x=0;
@@ -178,6 +184,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 			
 			zoomedImage = zoomedImage.getSubimage(x,y,w,h);
 			zoomedImage=resize(zoomedImage, labelref.getHeight(), labelref.getWidth());
+			labelref.setIcon(new ImageIcon(zoomedImage));
 			isZoomed=true;
 		}
 		else if(clicked.getName().equals("-") && isZoomed) {
@@ -189,16 +196,34 @@ public class ZoomButtons extends JButton implements MouseListener{
 			if(h==inImage.getHeight() && w==inImage.getWidth()) {
 				isZoomed=false;
 			}
-
+			zoomedImage=inImage.getSubimage(x, y, w, h);
 			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
-			
-			
+			labelref.setIcon(new ImageIcon(zoomedImage));
 		}
-		labelref= new JLabel(new ImageIcon(zoomedImage));
 		repaint();
 
 	}
+	public static boolean compareImages(BufferedImage imgA, BufferedImage imgB) {
+		  // The images must be the same size.
+		  if (imgA.getWidth() != imgB.getWidth() || imgA.getHeight() != imgB.getHeight()) {
+		    return false;
+		  }
 
+		  int width  = imgA.getWidth();
+		  int height = imgA.getHeight();
+
+		  // Loop over every pixel.
+		  for (int y = 0; y < height; y++) {
+		    for (int x = 0; x < width; x++) {
+		      // Compare the pixels for equality.
+		      if (imgA.getRGB(x, y) != imgB.getRGB(x, y)) {
+		        return false;
+		      }
+		    }
+		  }
+
+		  return true;
+		}
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
