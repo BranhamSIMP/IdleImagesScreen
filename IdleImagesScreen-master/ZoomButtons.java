@@ -55,11 +55,14 @@ public class ZoomButtons extends JButton implements MouseListener{
 	 * @Param frame JFrame that is in the front
 	 */
 	public void addZoomButtons(JFrame jf, JLabel label) {
+		
 		parent=jf;
 		labelref=label;
 		label=labelref;
 		zoomin.setName("+");
 		zoomout.setName("-");
+		zoomin.setFont(new Font("Arial", Font.BOLD,20));
+		zoomout.setFont(new Font("Arial", Font.BOLD,20));
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		 
 		 //Set flexible sizes
