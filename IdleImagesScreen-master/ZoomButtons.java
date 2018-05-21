@@ -28,27 +28,27 @@ public class ZoomButtons extends JButton implements MouseListener{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	int outwidth;
-	 int outlocalx;
-	 int outlocaly;
-	 int inwidth;
-	 int inlocalx;
-	 int inlocaly;
-	 double scalefac=0.1;
-	 JFrame parent;
-	 JLabel labelref;
-	 JButton zoomin = new JButton("+");
-	 JButton zoomout = new JButton("-");
-	 BufferedImage inImage;
-	 BufferedImage zoomedImage;
-	 int zoomx;
-	 int zoomy;
-	 int zoomwidth;
-	 int zoomheight;
-	 int zoomfactor=2;
-	 boolean isZoomed=false;
-	 private static final int maxzooms=8;
-	 int maxzoomclicks=maxzooms;
+	private int outwidth;
+	private int outlocalx;
+	private int outlocaly;
+	private int inwidth;
+	private int inlocalx;
+	private int inlocaly;
+	private double scalefac=0.1;
+	private JFrame parent;
+	private JLabel labelref;
+	private JButton zoomin = new JButton("+");
+	private JButton zoomout = new JButton("-");
+	private BufferedImage inImage;
+	private BufferedImage zoomedImage;
+	private int zoomx=0;
+	private int zoomy=0;
+	private int zoomwidth;
+	private int zoomheight;
+	private int zoomfactor=2;
+	private boolean isZoomed=false;
+	private static final int maxzooms=8;
+	private int maxzoomclicks=maxzooms;
 	public ZoomButtons(){
 		
 	}
@@ -127,7 +127,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 		
 	
 	}
-	public BufferedImage createImage() throws IOException {
+	private BufferedImage createImage() throws IOException {
 		int w = labelref.getWidth();
 	    int h = labelref.getHeight();
 	   
@@ -185,8 +185,9 @@ public class ZoomButtons extends JButton implements MouseListener{
 
 		
 		if(clicked.getName().equals("+") && maxzoomclicks>0) {
+			
 			zoomx+=zoomheight/(2*zoomfactor);
-			zoomy+=zoomwidth/(zoomfactor*2);
+			zoomy+=zoomwidth/(2*zoomfactor);
 			zoomheight=zoomheight/zoomfactor;
 			zoomwidth=zoomwidth/zoomfactor;
 			int realx=zoomedImage.getHeight()/(2*zoomfactor);
@@ -215,22 +216,22 @@ public class ZoomButtons extends JButton implements MouseListener{
 			int widthfactor = inImage.getWidth()/(2*ratio);
 			int heightfactor=inImage.getHeight()/(2*ratio);
 			
-			zoomx=zoomx-heightfactor;
-			zoomy=zoomy-widthfactor;
+			zoomx=zoomx-zoomheight/2;
+			zoomy=zoomy-zoomwidth/2;
 			zoomheight=zoomheight*zoomfactor;
 			zoomwidth=zoomwidth*zoomfactor;
 			}
 			//Catching error if someone zooms in, then tries to zoom out when there
 			//is only about a few pixels difference between inImage and zoomedImage
 			//due to rounding errors. Will set to maximum size if this happens.
-			try {
+//			try {
 			zoomedImage=inImage.getSubimage(zoomy, zoomx, zoomwidth, zoomheight);
-
-			}
-			catch(Exception exc) {
-				zoomedImage=inImage;
-				
-			}
+//
+//			}
+//			catch(Exception exc) {
+//				zoomedImage=inImage;
+//				
+//			}
 			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
 			
