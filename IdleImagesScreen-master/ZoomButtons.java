@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -34,6 +35,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 	private int inwidth;
 	private int inlocalx;
 	private int inlocaly;
+	private int borderdim;
 	private double scalefac=0.1;
 	private JFrame parent;
 	private JLabel labelref;
@@ -57,8 +59,8 @@ public class ZoomButtons extends JButton implements MouseListener{
 	 * @Param frame JFrame that is in the front
 	 */
 	public void addZoomButtons(JFrame jf, JLabel label) {
-		zoomin.setFont(new Font("Arial", Font.BOLD,20));
-		zoomout.setFont(new Font("Arial", Font.BOLD,20));
+//		zoomin.setFont(new Font("Arial", Font.BOLD,20));
+//		zoomout.setFont(new Font("Arial", Font.BOLD,20));
 		parent=jf;
 		labelref=label;
 		label=labelref;
@@ -69,7 +71,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 		 //Set flexible sizes
 		 int useddim=0;
 		 
-		 int borderdim=(int) (scalefac/4*useddim);
+		 borderdim=(int) (scalefac/4*useddim);
 		 
 		 boolean usingwidth;
 		 if(screenSize.getWidth()>screenSize.getHeight()) {
@@ -127,6 +129,36 @@ public class ZoomButtons extends JButton implements MouseListener{
 		
 	
 	}
+	
+	public void changeButtonSize(double proportion) {
+		inwidth*=proportion;
+		zoomin.setSize(inwidth,inwidth);
+		zoomout.setSize(inwidth,inwidth);
+		repaint();
+	}
+	public void changeButtonSize(int newdim) {
+		inwidth=newdim;
+		zoomin.setSize(inwidth, inwidth);
+		zoomout.setSize(inwidth,inwidth);
+		
+		repaint();
+	}
+	public void changeZoomInButtonLocation(int x, int y) {
+		
+		inlocaly=y;
+		inlocalx=x;
+		zoomin.setLocation(inlocalx, inlocaly);
+		
+		
+		repaint();
+	}
+	public void changeZoomOutButtonLocation(int x, int y) {
+		outlocalx=x;
+		outlocaly=y;
+		zoomout.setLocation(outlocalx, outlocaly);
+		repaint();
+		
+	}
 	private BufferedImage createImage() throws IOException {
 		int w = labelref.getWidth();
 	    int h = labelref.getHeight();
@@ -155,6 +187,27 @@ public class ZoomButtons extends JButton implements MouseListener{
         g2d.dispose();
         return resized;
 }
+	
+	/*
+	 * Use this to change the dimensions and location of the zoomview
+	 * @param r pass rectangle that is the new size and location of the
+	 * 			zoomed-image.
+	 */
+	public void setZoomDims(Rectangle r) {
+		zoomy=r.x;
+		zoomx=r.y;
+		zoomwidth=r.width;
+		zoomheight=r.height;
+		
+	}
+	
+	/*
+	 * Use this to get the dimensions and location of the zoomed-image.
+	 * @return returns Rectangle containing dimensions and location.
+	 */
+	public Rectangle getZoomDims() {
+		return new Rectangle(zoomy,zoomx,zoomwidth,zoomheight);
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -213,8 +266,6 @@ public class ZoomButtons extends JButton implements MouseListener{
 				zoomedImage=inImage;
 			}
 			else if(ratio>1) {
-			int widthfactor = inImage.getWidth()/(2*ratio);
-			int heightfactor=inImage.getHeight()/(2*ratio);
 			
 			zoomx=zoomx-zoomheight/2;
 			zoomy=zoomy-zoomwidth/2;
