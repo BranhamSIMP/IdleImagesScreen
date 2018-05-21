@@ -194,7 +194,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 			int realzheight=realx*2;
 			int realzwidth=realy*2;
 			
-			zoomedImage = zoomedImage.getSubimage(realx, realy, realzwidth, realzheight);
+			zoomedImage = zoomedImage.getSubimage(realy, realx, realzwidth, realzheight);
 			zoomedImage=resize(zoomedImage, labelref.getHeight(), labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
 			isZoomed=true;
@@ -224,7 +224,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 			//is only about a few pixels difference between inImage and zoomedImage
 			//due to rounding errors. Will set to maximum size if this happens.
 			try {
-			zoomedImage=inImage.getSubimage(zoomx, zoomy, zoomwidth, zoomheight);
+			zoomedImage=inImage.getSubimage(zoomy, zoomx, zoomwidth, zoomheight);
 
 			}
 			catch(Exception exc) {
