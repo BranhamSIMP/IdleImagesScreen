@@ -199,7 +199,7 @@ public class ZoomButtons extends JButton implements MouseListener{
 			labelref.setIcon(new ImageIcon(zoomedImage));
 			isZoomed=true;
 			maxzoomclicks--;
-			System.out.println("+:"+maxzoomclicks);
+			
 		}
 		else if(clicked.getName().equals("-") && isZoomed) {
 
@@ -233,14 +233,16 @@ public class ZoomButtons extends JButton implements MouseListener{
 			}
 			zoomedImage=resize(zoomedImage, labelref.getHeight(),labelref.getWidth());
 			labelref.setIcon(new ImageIcon(zoomedImage));
-			maxzoomclicks++;
-			if(zoomheight==inImage.getHeight() && zoomwidth==inImage.getWidth()) {
+			
+			if(maxzoomclicks==maxzooms) {
 				isZoomed=false;
 				maxzoomclicks=maxzooms;
-				System.out.println("-:"+maxzoomclicks);
+				
 				
 			}
-			System.out.println("-:"+zoomheight+", "+zoomwidth);
+			else {
+				maxzoomclicks++;
+			}
 			
 		}
 		repaint();
