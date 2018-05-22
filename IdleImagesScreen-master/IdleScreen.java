@@ -1,119 +1,173 @@
 
-import java.awt.AlphaComposite;
+import java.io.File;
+import java.util.ArrayList;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Panel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
+import RoutesAndUserInput.SimpGraphics;
+
+public class IdleScreen extends JFrame implements MouseListener,SimpGraphics {
+	private static boolean isRunning = true;
 
 
-    public class FadeImage extends JPanel implements MouseListener{
-
-        public static final long RUNNING_TIME = 2000;
-        
-        private BufferedImage inImage;
-        private BufferedImage outImage;
-
-        private float alpha = 0f;
-       
-
-        public FadeImage(BufferedImage first) {
-            	alpha=0f;
-                inImage = first;
-                outImage = first;
-        }
-        public void startfade(double transtime, BufferedImage next){
-               BufferedImage tmp = inImage;
-                outImage=tmp;
-                inImage=next;
-                
-                FastGameTimer g=new FastGameTimer(transtime);
-              
-                while(true) {
-                	
-                    	alpha=(float) (1f-g.getTimeRemaining()/g.getStartingTime());
-                       
-                        repaint();
-                    
-                	if(g.getTimeRemaining()<=0) {
-                		alpha=1f;
-                		break;
-                	}
-                	if(IdleScreen.getRunning()==false) {
-                		return;
-                	}
-        
-                }
-          
-            
-        
-        }
-       @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(
-                            Math.max(inImage.getWidth(), outImage.getWidth()), 
-                            Math.max(inImage.getHeight(), outImage.getHeight()));
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setComposite(AlphaComposite.SrcOver.derive(alpha));
-            int x = (getWidth() - inImage.getWidth()) / 2;
-            int y = (getHeight() - inImage.getHeight()) / 2;
-            g2d.drawImage(inImage, x, y, this);
-
-            g2d.setComposite(AlphaComposite.SrcOver.derive(1f - alpha));
-            x = (getWidth() - outImage.getWidth()) / 2;
-            y = (getHeight() - outImage.getHeight()) / 2;
-            g2d.drawImage(outImage, x, y, this);
-            g2d.dispose();
-        }
-
-    	@Override
-    	public void mouseClicked(MouseEvent arg0) {
-    	IdleScreen.setRunning();
-    	
-    	}
-
-    	@Override
-    	public void mouseEntered(MouseEvent e) {
-    		// TODO Auto-generated method stub
+	public IdleScreen(){
+	isRunning=true;	
+	
+	}
+	public void startidlescreen(double staticimagetime, double imagetransitiontime) throws IOException{
+		
+        //Initialize storage and access of images to be used in screensaver
+		String folderpath = "images";
+	 File dir = new File(folderpath);
+	    File[] directoryListing = dir.listFiles();
+	    ArrayList<BufferedImage> pics = new ArrayList<BufferedImage>(0);
+	    
+	    
+	    
+	    //Dimension of screen
+	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	   
+	    	
+	    	
+	  //Preparation of the Imaging
+	    JFrame f = new JFrame();
+	    f.setSize((int)screenSize.getWidth(), (int)screenSize.getHeight());
+	    JPanel hi = new FadeImage(resize(ImageIO.read(directoryListing[0]), f.getHeight(), f.getWidth()));
+	    f.add(hi);
+	    hi.setSize((int)screenSize.getWidth(), (int)screenSize.getHeight());
+	   
+	    
+	    
+	    hi.addMouseListener(this);
+	    f.setUndecorated(true);
+	    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
     		
-    		
-    	}
+    		f.setVisible(true);
+	  //Endless iteration through the images
+	    	for(int i=0;i<directoryListing.length;i=(i+1)%directoryListing.length) {
+	    		
+	    	
+	    	if(pics.size()==0) {
+	    		pics.add(ImageIO.read(directoryListing[0]));
+	    	}
+	    	
 
-    	@Override
-    	public void mouseExited(MouseEvent e) {
-    		// TODO Auto-generated method stub
-    		
-    	}
+	    	//Stays in loop, downloads next image, until timer runs out
+	    	FastGameTimer g = new FastGameTimer(staticimagetime);
+	    	boolean donedownloading= false;
+	    	while(true) {
+	    		System.out.print("");
+	    		
+	    		//Concurrent image loading
+	    		if(pics.size() < directoryListing.length && !donedownloading) {
+		    		pics.add(ImageIO.read(directoryListing[(i+1)%directoryListing.length]));
+		    		donedownloading=true;
+	    		}
+	    		if(!isRunning) {
+	    			
+	    			
+	    			f.dispose();
+		    		return;
+	    		}
+		    	else if(g.getTimeRemaining()<=0) {
+	    			break;
+	    		}
+	    		
+	    	}
+	    	((FadeImage) hi).startfade(imagetransitiontime, resize(pics.get((i+1)%directoryListing.length), f.getHeight(), f.getWidth()));
+	    	
+	    	if(!isRunning) {
+	    		f.dispose();
+	    		return;
+	    	}
+	    	}
+	    
+}
+	private static BufferedImage resize(BufferedImage img, int height, int width) {
+        Image tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return resized;
+}
 
-    	@Override
-    	public void mousePressed(MouseEvent e) {
-    		// TODO Auto-generated method stub
-    		IdleScreen.setRunning();
-    	}
+	public static void setRunning() {
+		isRunning=false;
+	}
+	public static boolean getRunning() {
+		return isRunning;
+	}
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		isRunning=false;
+	
+	}
 
-    	@Override
-    	public void mouseReleased(MouseEvent e) {
-    		// TODO Auto-generated method stub
-    		
-    	}
-    
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		isRunning=false;
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	@Override
+	public void inactiveTimer(int seconds) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void create() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void rescale(double scale) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	//METHOD TESTING
+ 	public static void main(String[] args) {
+ 		IdleScreen r = new IdleScreen();
+ 		try {
+ 			r.startidlescreen(2, .5);
+ 		} catch (IOException e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
+ 		}
+ 	}
 }
